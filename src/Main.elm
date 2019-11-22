@@ -1,7 +1,10 @@
 module Main exposing (..)
 
 import Browser exposing (element)
+import Grid exposing (Grid)
 import Html exposing (Html, text)
+import Playground exposing (..)
+import ViewPort exposing (ViewPort)
 
 
 
@@ -9,61 +12,60 @@ import Html exposing (Html, text)
 
 
 main =
-    Browser.element
-        { init = init
-        , subscriptions = subscriptions
-        , update = update
-        , view = view
-        }
+    Playground.game render update init
 
 
-
--- MODEL
-
-
-type Model
-    = NoModel
+type alias Memory =
+    { grid : Grid
+    }
 
 
-
--- MSG
-
-
-type Msg
-    = NoMsg
+init : Memory
+init =
+    { grid = Grid.calculate ( 640, 480 ) 16
+    }
 
 
-
--- INIT
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( NoModel, Cmd.none )
+update : Computer -> Memory -> Memory
+update computer memory =
+    memory
 
 
-
--- UPDATE
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    ( model, Cmd.none )
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
+render : Computer -> Memory -> List Shape
+render { screen } memory =
+    let
+        viewPort =
+            ViewPort.calculate viewPortCalculationSettings screen
+    in
+    [ rectangle black screen.width screen.height
+    , ViewPort.render viewPortRenderSettings viewPort
+    , Grid.render viewPort memory.grid
+    ]
 
 
+viewPortCalculationSettings : ViewPort.CalculationSettings
+viewPortCalculationSettings =
+    { aspectRatioX = aspectRatio.ratioX
+    , aspectRatioY = aspectRatio.ratioY
+    , paddingX = 64
+    , paddingY = 64
+    }
 
---VIEW
+
+viewPortRenderSettings : ViewPort.RenderSettings
+viewPortRenderSettings =
+    { backgroundColor = black
+    , outlineSize = 1
+    , outlineColor = white
+    }
 
 
-view : Model -> Html Msg
-view model =
-    text "Hello World"
+aspectRatio : AspectRatio
+aspectRatio =
+    { ratioX = 640
+    , ratioY = 480
+    }
+
+
+type alias AspectRatio =
+    { ratioX : Number, ratioY : Number }
