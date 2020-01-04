@@ -6678,20 +6678,67 @@ var $evancz$elm_playground$Playground$game = F3(
 		return $elm$browser$Browser$document(
 			{init: init, subscriptions: subscriptions, update: update, view: view});
 	});
-var $author$project$Grid$calculate = F2(
-	function (_v0, cellSize) {
-		var width = _v0.a;
-		var height = _v0.b;
-		return {
-			columns: $elm$core$Basics$floor(width / cellSize),
-			rows: $elm$core$Basics$floor(height / cellSize)
-		};
+var $author$project$Snake$Right = {$: 'Right'};
+var $author$project$Snake$Snake = function (a) {
+	return {$: 'Snake', a: a};
+};
+var $author$project$Snake$Tail = function (a) {
+	return {$: 'Tail', a: a};
+};
+var $author$project$Snake$create = function (data) {
+	return $author$project$Snake$Snake(
+		$author$project$Snake$Tail(data));
+};
+var $author$project$Snake$Body = F2(
+	function (a, b) {
+		return {$: 'Body', a: a, b: b};
 	});
+var $author$project$Snake$updateLocationData = function (data) {
+	var _v0 = data.dir;
+	switch (_v0.$) {
+		case 'Up':
+			return _Utils_update(
+				data,
+				{y: data.y + 1});
+		case 'Down':
+			return _Utils_update(
+				data,
+				{y: data.y - 1});
+		case 'Left':
+			return _Utils_update(
+				data,
+				{x: data.x - 1});
+		default:
+			return _Utils_update(
+				data,
+				{x: data.x + 1});
+	}
+};
+var $author$project$Snake$grow = function (_v0) {
+	var head = _v0.a;
+	var headData = function () {
+		if (head.$ === 'Body') {
+			var subPart = head.a;
+			var data = head.b;
+			return data;
+		} else {
+			var data = head.a;
+			return data;
+		}
+	}();
+	return $author$project$Snake$Snake(
+		A2(
+			$author$project$Snake$Body,
+			head,
+			$author$project$Snake$updateLocationData(headData)));
+};
 var $author$project$Main$init = {
-	grid: A2(
-		$author$project$Grid$calculate,
-		_Utils_Tuple2(640, 480),
-		16)
+	snake: $author$project$Snake$grow(
+		$author$project$Snake$grow(
+			$author$project$Snake$grow(
+				$author$project$Snake$create(
+					{dir: $author$project$Snake$Right, x: 0, y: 0})))),
+	ticks: 0
 };
 var $evancz$elm_playground$Playground$Hex = function (a) {
 	return {$: 'Hex', a: a};
@@ -6735,41 +6782,6 @@ var $evancz$elm_playground$Playground$rectangle = F3(
 			1,
 			A3($evancz$elm_playground$Playground$Rectangle, color, width, height));
 	});
-var $evancz$elm_playground$Playground$charcoal = $evancz$elm_playground$Playground$Hex('#555753');
-var $evancz$elm_playground$Playground$moveY = F2(
-	function (dy, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		var a = _v0.c;
-		var s = _v0.d;
-		var o = _v0.e;
-		var f = _v0.f;
-		return A6($evancz$elm_playground$Playground$Shape, x, y + dy, a, s, o, f);
-	});
-var $author$project$Grid$drawHorizonalLine = F3(
-	function (viewPort, cellHeight, y) {
-		return A2(
-			$evancz$elm_playground$Playground$moveY,
-			viewPort.top - (y * cellHeight),
-			A3($evancz$elm_playground$Playground$rectangle, $evancz$elm_playground$Playground$charcoal, viewPort.width, 1));
-	});
-var $evancz$elm_playground$Playground$moveX = F2(
-	function (dx, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		var a = _v0.c;
-		var s = _v0.d;
-		var o = _v0.e;
-		var f = _v0.f;
-		return A6($evancz$elm_playground$Playground$Shape, x + dx, y, a, s, o, f);
-	});
-var $author$project$Grid$drawVeritcalLine = F3(
-	function (viewPort, cellWidth, x) {
-		return A2(
-			$evancz$elm_playground$Playground$moveX,
-			viewPort.left + (x * cellWidth),
-			A3($evancz$elm_playground$Playground$rectangle, $evancz$elm_playground$Playground$charcoal, 1, viewPort.height));
-	});
 var $evancz$elm_playground$Playground$Group = function (a) {
 	return {$: 'Group', a: a};
 };
@@ -6783,27 +6795,6 @@ var $evancz$elm_playground$Playground$group = function (shapes) {
 		1,
 		$evancz$elm_playground$Playground$Group(shapes));
 };
-var $author$project$Grid$render = F2(
-	function (viewPort, grid) {
-		var rowList = A2($elm$core$List$range, 0, grid.rows);
-		var columList = A2($elm$core$List$range, 0, grid.columns);
-		var cellWidth = viewPort.width / grid.columns;
-		var cellHeight = viewPort.height / grid.rows;
-		return $evancz$elm_playground$Playground$group(
-			_List_fromArray(
-				[
-					$evancz$elm_playground$Playground$group(
-					A2(
-						$elm$core$List$map,
-						A2($author$project$Grid$drawHorizonalLine, viewPort, cellHeight),
-						rowList)),
-					$evancz$elm_playground$Playground$group(
-					A2(
-						$elm$core$List$map,
-						A2($author$project$Grid$drawVeritcalLine, viewPort, cellWidth),
-						columList))
-				]));
-	});
 var $author$project$ViewPort$render = F2(
 	function (_v0, viewPort) {
 		var backgroundColor = _v0.backgroundColor;
@@ -6816,9 +6807,61 @@ var $author$project$ViewPort$render = F2(
 					A3($evancz$elm_playground$Playground$rectangle, backgroundColor, viewPort.width, viewPort.height)
 				]));
 	});
+var $author$project$Main$gamePort = {height: 30, width: 40};
+var $evancz$elm_playground$Playground$move = F3(
+	function (dx, dy, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		var a = _v0.c;
+		var s = _v0.d;
+		var o = _v0.e;
+		var f = _v0.f;
+		return A6($evancz$elm_playground$Playground$Shape, x + dx, y + dy, a, s, o, f);
+	});
+var $evancz$elm_playground$Playground$white = $evancz$elm_playground$Playground$Hex('#FFFFFF');
+var $author$project$Main$renderSnakeData = F2(
+	function (viewPort, snakeData) {
+		var width = viewPort.width / $author$project$Main$gamePort.width;
+		var height = viewPort.height / $author$project$Main$gamePort.height;
+		return A3(
+			$evancz$elm_playground$Playground$move,
+			(width * snakeData.x) - (width / 2),
+			(height * snakeData.y) + (height / 2),
+			$evancz$elm_playground$Playground$group(
+				_List_fromArray(
+					[
+						A3($evancz$elm_playground$Playground$rectangle, $evancz$elm_playground$Playground$black, width, height),
+						A3($evancz$elm_playground$Playground$rectangle, $evancz$elm_playground$Playground$white, width - 1, height - 1)
+					])));
+	});
+var $author$project$Snake$dataListFromPart = function (part) {
+	if (part.$ === 'Body') {
+		var subPart = part.a;
+		var data = part.b;
+		return A2(
+			$elm$core$List$cons,
+			data,
+			$author$project$Snake$dataListFromPart(subPart));
+	} else {
+		var data = part.a;
+		return _List_fromArray(
+			[data]);
+	}
+};
+var $author$project$Snake$toDataList = function (_v0) {
+	var head = _v0.a;
+	return $author$project$Snake$dataListFromPart(head);
+};
+var $author$project$Main$renderSnake = F2(
+	function (viewPort, snake) {
+		return $evancz$elm_playground$Playground$group(
+			A2(
+				$elm$core$List$map,
+				$author$project$Main$renderSnakeData(viewPort),
+				$author$project$Snake$toDataList(snake)));
+	});
 var $author$project$Main$aspectRatio = {ratioX: 640, ratioY: 480};
 var $author$project$Main$viewPortCalculationSettings = {aspectRatioX: $author$project$Main$aspectRatio.ratioX, aspectRatioY: $author$project$Main$aspectRatio.ratioY, paddingX: 64, paddingY: 64};
-var $evancz$elm_playground$Playground$white = $evancz$elm_playground$Playground$Hex('#FFFFFF');
 var $author$project$Main$viewPortRenderSettings = {backgroundColor: $evancz$elm_playground$Playground$black, outlineColor: $evancz$elm_playground$Playground$white, outlineSize: 1};
 var $author$project$Main$render = F2(
 	function (_v0, memory) {
@@ -6828,12 +6871,124 @@ var $author$project$Main$render = F2(
 			[
 				A3($evancz$elm_playground$Playground$rectangle, $evancz$elm_playground$Playground$black, screen.width, screen.height),
 				A2($author$project$ViewPort$render, $author$project$Main$viewPortRenderSettings, viewPort),
-				A2($author$project$Grid$render, viewPort, memory.grid)
+				A2($author$project$Main$renderSnake, viewPort, memory.snake)
 			]);
+	});
+var $author$project$Snake$Down = {$: 'Down'};
+var $author$project$Snake$Left = {$: 'Left'};
+var $author$project$Snake$Up = {$: 'Up'};
+var $author$project$Snake$changePartDirection = F2(
+	function (newDir, part) {
+		if (part.$ === 'Body') {
+			var subPart = part.a;
+			var data = part.b;
+			return A2(
+				$author$project$Snake$Body,
+				subPart,
+				_Utils_update(
+					data,
+					{dir: newDir}));
+		} else {
+			var data = part.a;
+			return $author$project$Snake$Tail(
+				_Utils_update(
+					data,
+					{dir: newDir}));
+		}
+	});
+var $author$project$Snake$changeDirection = F2(
+	function (newDir, _v0) {
+		var head = _v0.a;
+		return $author$project$Snake$Snake(
+			A2($author$project$Snake$changePartDirection, newDir, head));
+	});
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $elm$core$Set$member = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return A2($elm$core$Dict$member, key, dict);
+	});
+var $author$project$Main$redirectSnake = F2(
+	function (_v0, snake) {
+		var keys = _v0.keys;
+		return A2($elm$core$Set$member, 'w', keys) ? A2($author$project$Snake$changeDirection, $author$project$Snake$Up, snake) : (A2($elm$core$Set$member, 's', keys) ? A2($author$project$Snake$changeDirection, $author$project$Snake$Down, snake) : (A2($elm$core$Set$member, 'a', keys) ? A2($author$project$Snake$changeDirection, $author$project$Snake$Left, snake) : (A2($elm$core$Set$member, 'd', keys) ? A2($author$project$Snake$changeDirection, $author$project$Snake$Right, snake) : snake)));
+	});
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $author$project$Snake$updatePartLocation = function (part) {
+	if (part.$ === 'Body') {
+		var subPart = part.a;
+		var data = part.b;
+		var movedSubPart = $author$project$Snake$updatePartLocation(subPart);
+		var redirectedSubPart = A2($author$project$Snake$changePartDirection, data.dir, movedSubPart);
+		var movedData = $author$project$Snake$updateLocationData(data);
+		return A2($author$project$Snake$Body, redirectedSubPart, movedData);
+	} else {
+		var data = part.a;
+		return $author$project$Snake$Tail(
+			$author$project$Snake$updateLocationData(data));
+	}
+};
+var $author$project$Snake$updateLocation = function (_v0) {
+	var head = _v0.a;
+	return $author$project$Snake$Snake(
+		$author$project$Snake$updatePartLocation(head));
+};
+var $author$project$Main$updateSnake = F2(
+	function (ticks, snake) {
+		return (!A2($elm$core$Basics$modBy, 8, ticks)) ? $author$project$Snake$updateLocation(snake) : snake;
 	});
 var $author$project$Main$update = F2(
 	function (computer, memory) {
-		return memory;
+		var ticks = memory.ticks;
+		var snake = memory.snake;
+		return _Utils_update(
+			memory,
+			{
+				snake: A2(
+					$author$project$Main$redirectSnake,
+					computer.keyboard,
+					A2($author$project$Main$updateSnake, ticks, snake)),
+				ticks: ticks + 1
+			});
 	});
 var $author$project$Main$main = A3($evancz$elm_playground$Playground$game, $author$project$Main$render, $author$project$Main$update, $author$project$Main$init);
 _Platform_export({'Main':{'init':$author$project$Main$main(
